@@ -63,7 +63,7 @@ app.delete('/articles/:id', (req, res) => {
   };
 
   Article.findByIdAndRemove(id).then((article) => {
-    res.send(article);
+    res.send({article});
   }).catch((e) => res.status(400).send());
 });
 

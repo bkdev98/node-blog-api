@@ -105,3 +105,24 @@ describe('GET /articles/:id', () => {
       .end(done);
   });
 })
+
+describe('DELETE /articles/:id', () => {
+  it('should delete article', (done) => {
+    request(app)
+      .delete(`/articles/${articles[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.article.title).toBe(articles[0].title);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Article.find().then((articles) => {
+          expect(articles.length).toBe(1);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+})
