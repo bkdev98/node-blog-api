@@ -8,7 +8,7 @@ var {Article} = require('./models/article');
 var {User} = require('./models/user');
 
 var app = express();
-var port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
@@ -56,7 +56,7 @@ app.get('/articles/:id', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is up on port ${port}.`);
+  console.log(`Started up on port ${port}.`);
 });
 
 module.exports = {app};
