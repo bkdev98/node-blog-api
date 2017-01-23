@@ -15,7 +15,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/articles', (req, res) => {
-  res.send('Articles')
+  Article.find().then((articles) => {
+    res.send({articles});
+  }, (e) => {
+    res.status(400).send(e);
+  });
 });
 
 app.post('/articles', (req, res) => {
