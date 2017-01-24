@@ -1,5 +1,6 @@
-var express = require('express');
-var bodyParser = require('body-parser');
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
 
 const {ObjectID} = require('mongodb');
 
@@ -66,9 +67,29 @@ app.delete('/articles/:id', (req, res) => {
     if (!article) {
       return res.status(404).send();
     };
-    
+
     res.send({article});
   }).catch((e) => res.status(400).send());
+});
+
+app.patch('/articles/:id', (req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ['title', 'body']);
+  body.createdAt = new Date().getTime();
+  
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Article.findByIdAndUpdate(id, {$set: body}, {new: true}).then((article) => {
+    if (!article) {
+      return res.status(404).send();
+    }
+
+    res.send({article});
+  }).catch((e) => {
+    res.status(400).send();
+  });
 });
 
 app.listen(port, () => {

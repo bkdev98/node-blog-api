@@ -8,11 +8,13 @@ const {Article} = require('./../models/article');
 const articles = [{
   _id: new ObjectID(),
   title: 'Occaecat consectetur minim labore ullamco quis reprehenderit excepteur officia.',
-  body: 'Sit aute velit exercitation magna voluptate incididunt aliqua aute nostrud id ad ut ex sint labore labore duis. Est labore fugiat magna labore veniam fugiat anim tempor ex eiusmod aliquip amet adipisicing esse enim dolor aute. Sunt dolor pariatur reprehenderit enim dolore aliqua id nostrud id velit sit consectetur.'
+  body: 'Sit aute velit exercitation magna voluptate incididunt aliqua aute nostrud id ad ut ex sint labore labore duis. Est labore fugiat magna labore veniam fugiat anim tempor ex eiusmod aliquip amet adipisicing esse enim dolor aute. Sunt dolor pariatur reprehenderit enim dolore aliqua id nostrud id velit sit consectetur.',
+  createdAt: new Date().getTime()
 }, {
   _id: new ObjectID(),
   title: 'Enim eiusmod veniam amet dolore cupidatat id deserunt amet id in nostrud cupidatat cillum sunt deserunt.',
-  body: 'Ut cupidatat dolore ea mollit reprehenderit commodo incididunt nostrud pariatur. Proident qui mollit ad pariatur et dolor veniam tempor est magna do ipsum. Esse est ad do consectetur do exercitation adipisicing excepteur laboris non voluptate commodo magna anim.'
+  body: 'Ut cupidatat dolore ea mollit reprehenderit commodo incididunt nostrud pariatur. Proident qui mollit ad pariatur et dolor veniam tempor est magna do ipsum. Esse est ad do consectetur do exercitation adipisicing excepteur laboris non voluptate commodo magna anim.',
+  createdAt: new Date().getTime()
 }];
 
 beforeEach((done) => {
@@ -149,5 +151,58 @@ describe('DELETE /articles/:id', () => {
       .delete('/articles/123')
       .expect(404)
       .end(done);
-  })
-})
+  });
+});
+
+describe('PATCH /articles/:id', () => {
+  it('should update article', (done) => {
+    var id = articles[0]._id.toHexString();
+    var body = {
+      'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+    }
+    request(app)
+      .patch(`/articles/${id}`)
+      .send(body)
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Article.find().then((articles) => {
+          expect(articles[0].title).toBe(body.title);
+          expect(articles[0].body).toBe(body.body);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should return 404 if article not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+    var body = {
+      'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+    }
+
+    request(app)
+      .patch(`/articles/${hexId}`)
+      .send(body)
+      .expect(404)
+      .end(done);
+  });
+
+  // it('should not update article with invalid body', (done) => {
+  //   var id = articles[0]._id;
+  //   var body = {
+  //     'title': '',
+  //     'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+  //   }
+  //
+  //   request(app)
+  //     .patch(`/articles/${id}`)
+  //     .send(body)
+  //     .expect(400)
+  //     .end(done);
+  // });
+});

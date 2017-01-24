@@ -18,10 +18,4 @@ var Article = mongoose.model('Article', {
   }
 });
 
-var newArticle = new Article({
-  title: 'Enjoy Coffee',
-  body: 'Weekend at The Coffee House?',
-  createdAt: new Date().getTime()
-});
-
 module.exports = {Article};
