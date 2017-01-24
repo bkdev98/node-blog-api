@@ -5,10 +5,13 @@ const {ObjectID} = require('mongodb');
 const {app} = require('./../server');
 const {Article} = require('./../models/article');
 const {User} = require('./../models/user');
-const {articles, populateArticles, users, populateUsers} = require('./seed/seed');
+const {Category} = require('./../models/category');
+
+const {articles, populateArticles, users, populateUsers, categories, populateCategories} = require('./seed/seed');
 
 beforeEach(populateUsers);
 beforeEach(populateArticles);
+beforeEach(populateCategories);
 
 describe('POST /articles', () => {
   it('should create a new article', (done) => {
@@ -379,6 +382,43 @@ describe('DELETE /users/me/token', () => {
 
         User.findById(users[0]._id).then((user) => {
           expect(user.tokens.length).toBe(0);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+});
+
+describe('POST /categories', () => {
+  it('should create new category', (done) => {
+    var body = {'name': 'Lifestyle'};
+
+    request(app)
+      .post('/categories')
+      .set('x-auth', users[0].tokens[0].token)
+      .send(body)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.name).toBe(body.name);
+        expect(res.body._creator).toExist();
+      })
+      .end(done);
+  });
+
+  it('should not create duplicated category', (done) => {
+    request(app)
+      .post('/categories')
+      .set('x-auth', users[0].tokens[0].token)
+      .send({
+        name: categories[0].name
+      })
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Category.find().then((categories) => {
+          expect(categories.length).toBe(2);
           done();
         }).catch((e) => done(e));
       });

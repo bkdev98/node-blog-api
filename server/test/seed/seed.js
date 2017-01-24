@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const {Article} = require('./../../models/article');
 const {User} = require('./../../models/user');
+const {Category} = require('./../../models/category');
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
@@ -39,9 +40,25 @@ const users = [{
   }]
 }];
 
+const categories = [{
+  _id: new ObjectID(),
+  name: "Freelance",
+  _creator: userOneId
+}, {
+  _id: new ObjectID(),
+  name: "Web Development",
+  _creator: userTwoId
+}];
+
 const populateArticles = (done) => {
   Article.remove({}).then(() => {
     return Article.insertMany(articles);
+  }).then(() => done());
+};
+
+const populateCategories = (done) => {
+  Category.remove({}).then(() => {
+    return Category.insertMany(categories);
   }).then(() => done());
 };
 
@@ -54,4 +71,4 @@ const populateUsers = (done) => {
   }).then(() => done());
 };
 
-module.exports = {articles, populateArticles, users, populateUsers};
+module.exports = {articles, populateArticles, users, populateUsers, categories, populateCategories};

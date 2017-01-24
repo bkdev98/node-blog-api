@@ -9,6 +9,8 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Article} = require('./models/article');
 var {User} = require('./models/user');
+var {Category} = require('./models/category');
+
 var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
@@ -153,6 +155,20 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 
 app.listen(port, () => {
   console.log(`Started up on port ${port}.`);
+});
+
+app.post('/categories', authenticate, (req, res) => {
+  var body = _.pick(req.body, ['name']);
+  body._createdAt = new Date().getTime();
+  body._creator = req.user._id;
+
+  var newCategory = new Category(body);
+
+  newCategory.save().then((category) => {
+    return res.send(category);
+  }).catch((e) => {
+    return res.status(400).send();
+  });
 });
 
 module.exports = {app};
