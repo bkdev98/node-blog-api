@@ -1,3 +1,5 @@
+require('./config/config');
+
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,7 +11,7 @@ var {Article} = require('./models/article');
 var {User} = require('./models/user');
 
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
@@ -76,7 +78,7 @@ app.patch('/articles/:id', (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['title', 'body']);
   body.createdAt = new Date().getTime();
-  
+
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
