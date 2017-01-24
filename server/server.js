@@ -20,18 +20,21 @@ app.get('/', (req, res) => {
   res.send('Node Blog API')
 });
 
-app.get('/articles', (req, res) => {
-  Article.find().then((articles) => {
+app.get('/articles', authenticate, (req, res) => {
+  Article.find({
+    _creator: req.user._id
+  }).then((articles) => {
     res.send({articles});
   }, (e) => {
     res.status(400).send(e);
   });
 });
 
-app.post('/articles', (req, res) => {
+app.post('/articles', authenticate, (req, res) => {
   var article = new Article({
     title: req.body.title,
-    body: req.body.body
+    body: req.body.body,
+    _creator: req.user._id
   });
 
   article.save().then((doc) => {
@@ -41,14 +44,17 @@ app.post('/articles', (req, res) => {
   });
 });
 
-app.get('/articles/:id', (req, res) => {
+app.get('/articles/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   };
 
-  Article.findById(id).then((article) => {
+  Article.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then((article) => {
     if (!article) {
       return res.status(404).send();
     };
@@ -59,14 +65,17 @@ app.get('/articles/:id', (req, res) => {
   });
 });
 
-app.delete('/articles/:id', (req, res) => {
+app.delete('/articles/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if(!ObjectID.isValid(id)) {
     return res.status(404).send();
   };
 
-  Article.findByIdAndRemove(id).then((article) => {
+  Article.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((article) => {
     if (!article) {
       return res.status(404).send();
     };
@@ -75,7 +84,7 @@ app.delete('/articles/:id', (req, res) => {
   }).catch((e) => res.status(400).send());
 });
 
-app.patch('/articles/:id', (req, res) => {
+app.patch('/articles/:id', authenticate,(req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['title', 'body']);
   body.createdAt = new Date().getTime();
@@ -84,7 +93,10 @@ app.patch('/articles/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Article.findByIdAndUpdate(id, {$set: body}, {new: true}).then((article) => {
+  Article.findOneAndUpdate({
+    _id: id,
+    _creator: req.user._id
+  }, {$set: body}, {new: true}).then((article) => {
     if (!article) {
       return res.status(404).send();
     }

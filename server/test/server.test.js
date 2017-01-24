@@ -17,6 +17,7 @@ describe('POST /articles', () => {
 
     request(app)
       .post('/articles')
+      .set('x-auth', users[0].tokens[0].token)
       .send({title, body})
       .expect(200)
       .expect((res) => {
@@ -40,6 +41,7 @@ describe('POST /articles', () => {
   it('should not create article with invalid body data', (done) => {
     request(app)
       .post('/articles')
+      .set('x-auth', users[0].tokens[0].token)
       .send({})
       .expect(400)
       .end((err, res) => {
@@ -59,9 +61,10 @@ describe('GET /articles', () => {
   it('should get all articles', (done) => {
     request(app)
       .get('/articles')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
-        expect(res.body.articles.length).toBe(2);
+        expect(res.body.articles.length).toBe(1);
       })
       .end(done);
   });
@@ -71,10 +74,19 @@ describe('GET /articles/:id', () => {
   it('should return article doc', (done) => {
     request(app)
       .get(`/articles/${articles[0]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.article.title).toBe(articles[0].title);
       })
+      .end(done);
+  });
+
+  it('should not return article doc created by other user', (done) => {
+    request(app)
+      .get(`/articles/${articles[1]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(404)
       .end(done);
   });
 
@@ -83,6 +95,7 @@ describe('GET /articles/:id', () => {
 
     request(app)
       .get(`/articles/${someID}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -90,6 +103,7 @@ describe('GET /articles/:id', () => {
   it('should return 404 if non-object ids', (done) => {
     request(app)
       .get('/articles/123')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -99,6 +113,7 @@ describe('DELETE /articles/:id', () => {
   it('should delete article', (done) => {
     request(app)
       .delete(`/articles/${articles[0]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.article.title).toBe(articles[0].title);
@@ -115,11 +130,29 @@ describe('DELETE /articles/:id', () => {
       });
   });
 
+  it('should not delete article created by other user', (done) => {
+    request(app)
+      .delete(`/articles/${articles[1]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(404)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Article.find().then((articles) => {
+          expect(articles.length).toBe(2);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
   it('should return 404 if article not found', (done) => {
     var hexId = new ObjectID().toHexString();
 
     request(app)
       .delete(`/articles/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end((err, res) => {
         if (err) {
@@ -136,6 +169,7 @@ describe('DELETE /articles/:id', () => {
   it('should return 404 if object id is invalid', (done) => {
     request(app)
       .delete('/articles/123')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -150,6 +184,7 @@ describe('PATCH /articles/:id', () => {
     }
     request(app)
       .patch(`/articles/${id}`)
+      .set('x-auth', users[0].tokens[0].token)
       .send(body)
       .expect(200)
       .end((err, res) => {
@@ -165,6 +200,20 @@ describe('PATCH /articles/:id', () => {
       });
   });
 
+  it('should not update article created by other user', (done) => {
+    var id = articles[1]._id.toHexString();
+    var body = {
+      'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+    }
+    request(app)
+      .patch(`/articles/${id}`)
+      .set('x-auth', users[0].tokens[0].token)
+      .send(body)
+      .expect(404)
+      .end(done);
+  });
+
   it('should return 404 if article not found', (done) => {
     var hexId = new ObjectID().toHexString();
     var body = {
@@ -174,6 +223,7 @@ describe('PATCH /articles/:id', () => {
 
     request(app)
       .patch(`/articles/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
       .send(body)
       .expect(404)
       .end(done);
@@ -283,7 +333,7 @@ describe('POST /users/login', () => {
         }
 
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens[0]).toInclude({
+          expect(user.tokens[1]).toInclude({
             access: 'auth',
             token: res.headers['x-auth']
           });
@@ -309,7 +359,7 @@ describe('POST /users/login', () => {
         }
 
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens.length).toBe(0);
+          expect(user.tokens.length).toBe(1);
           done();
         }).catch((e) => done(e));
       });

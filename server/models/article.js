@@ -15,6 +15,10 @@ var Article = mongoose.model('Article', {
   },
   createdAt: {
     type: Number
+  },
+  _creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
   }
 });
 
