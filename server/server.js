@@ -183,6 +183,24 @@ app.get('/categories', (req, res) => {
   });
 });
 
+app.get('/categories/:id', (req, res) => {
+  var id = req.params.id;
+
+  Category.findById(id).then((category) => {
+    if (!category) {
+      return res.status(404).send();
+    }
+
+    Article.find({
+      _category: id
+    }).then((articles) => {
+      res.send(articles);
+    }).catch((e) => {
+      return res.status(400).send();
+    });
+  });
+});
+
 app.listen(port, () => {
   console.log(`Started up on port ${port}.`);
 });

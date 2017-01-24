@@ -476,3 +476,23 @@ describe('POST /categories', () => {
       });
   });
 });
+
+describe('GET /categories/:id', () => {
+  it('should return articles of this category', (done) => {
+    request(app)
+      .get(`/categories/${categories[0]._id}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.length).toBe(1);
+      })
+      .end(done);
+  });
+
+  it('should return 404 if category not found', (done) => {
+    var hexId = new ObjectID();
+    request(app)
+      .get(`/categories/${hexId}`)
+      .expect(404)
+      .end(done);
+  });
+});
