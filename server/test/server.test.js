@@ -195,7 +195,8 @@ describe('PATCH /articles/:id', () => {
     var id = articles[0]._id.toHexString();
     var body = {
       'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
-      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.',
+      '_category': categories[1]._id
     }
     request(app)
       .patch(`/articles/${id}`)
@@ -210,6 +211,31 @@ describe('PATCH /articles/:id', () => {
         Article.find().then((articles) => {
           expect(articles[0].title).toBe(body.title);
           expect(articles[0].body).toBe(body.body);
+          expect(articles[0]._category.toHexString()).toBe(body._category.toHexString());
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should not update article with invalid category id', (done) => {
+    var id = articles[0]._id.toHexString();
+    var body = {
+      'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.',
+      '_category': new ObjectID()
+    }
+    request(app)
+      .patch(`/articles/${id}`)
+      .set('x-auth', users[0].tokens[0].token)
+      .send(body)
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Article.find().then((articles) => {
+          expect(articles[0]._category.toHexString()).toBe(categories[0]._id.toHexString());
           done();
         }).catch((e) => done(e));
       });
@@ -219,7 +245,8 @@ describe('PATCH /articles/:id', () => {
     var id = articles[1]._id.toHexString();
     var body = {
       'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
-      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.',
+      '_category': categories[1]._id
     }
     request(app)
       .patch(`/articles/${id}`)
@@ -233,7 +260,8 @@ describe('PATCH /articles/:id', () => {
     var hexId = new ObjectID().toHexString();
     var body = {
       'title': 'Officia velit sint deserunt consequat ea ad velit dolore voluptate.',
-      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.'
+      'body': 'Irure cillum cupidatat occaecat quis in do et consequat occaecat. Dolor aute consequat eiusmod consequat qui veniam consectetur. Veniam proident ex labore aliqua nulla sint mollit cupidatat.',
+      '_category': categories[1]._id
     }
 
     request(app)

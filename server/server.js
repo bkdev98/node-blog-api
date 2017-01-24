@@ -90,24 +90,30 @@ app.delete('/articles/:id', authenticate, (req, res) => {
 
 app.patch('/articles/:id', authenticate,(req, res) => {
   var id = req.params.id;
-  var body = _.pick(req.body, ['title', 'body']);
+  var body = _.pick(req.body, ['title', 'body', '_category']);
   body.createdAt = new Date().getTime();
 
-  if (!ObjectID.isValid(id)) {
-    return res.status(404).send();
-  }
+  Category.findById(body._category).then((category) => {
+    if (!category) {
+      return res.status(400).send();
+    }
 
-  Article.findOneAndUpdate({
-    _id: id,
-    _creator: req.user._id
-  }, {$set: body}, {new: true}).then((article) => {
-    if (!article) {
+    if (!ObjectID.isValid(id)) {
       return res.status(404).send();
     }
 
-    res.send({article});
-  }).catch((e) => {
-    res.status(400).send();
+    Article.findOneAndUpdate({
+      _id: id,
+      _creator: req.user._id
+    }, {$set: body}, {new: true}).then((article) => {
+      if (!article) {
+        return res.status(404).send();
+      }
+
+      res.send({article});
+    }).catch((e) => {
+      res.status(400).send();
+    });
   });
 });
 
