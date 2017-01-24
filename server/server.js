@@ -94,6 +94,26 @@ app.patch('/articles/:id', (req, res) => {
   });
 });
 
+app.get('/users', (req, res) => {
+  User.find().then((users) => {
+    res.send({users});
+  }).catch((e) => res.status(400).send(e));
+});
+
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  body.createdAt = new Date().getTime();
+  var user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
+});
+
 app.listen(port, () => {
   console.log(`Started up on port ${port}.`);
 });
