@@ -428,6 +428,18 @@ describe('DELETE /users/me/token', () => {
   });
 });
 
+describe('GET /categories', () => {
+  it('should return categories list', (done) => {
+    request(app)
+      .get('/categories')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.length).toBe(2);
+      })
+      .end(done);
+  });
+});
+
 describe('POST /categories', () => {
   it('should create new category', (done) => {
     var body = {'name': 'Lifestyle'};

@@ -175,6 +175,14 @@ app.post('/categories', authenticate, (req, res) => {
   });
 });
 
+app.get('/categories', (req, res) => {
+  Category.find().then((categories) => {
+    res.send(categories);
+  }, (e) => {
+    res.status(400).send();
+  });
+});
+
 app.listen(port, () => {
   console.log(`Started up on port ${port}.`);
 });
