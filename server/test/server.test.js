@@ -4,24 +4,11 @@ const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Article} = require('./../models/article');
+const {User} = require('./../models/user');
+const {articles, populateArticles, users, populateUsers} = require('./seed/seed');
 
-const articles = [{
-  _id: new ObjectID(),
-  title: 'Occaecat consectetur minim labore ullamco quis reprehenderit excepteur officia.',
-  body: 'Sit aute velit exercitation magna voluptate incididunt aliqua aute nostrud id ad ut ex sint labore labore duis. Est labore fugiat magna labore veniam fugiat anim tempor ex eiusmod aliquip amet adipisicing esse enim dolor aute. Sunt dolor pariatur reprehenderit enim dolore aliqua id nostrud id velit sit consectetur.',
-  createdAt: new Date().getTime()
-}, {
-  _id: new ObjectID(),
-  title: 'Enim eiusmod veniam amet dolore cupidatat id deserunt amet id in nostrud cupidatat cillum sunt deserunt.',
-  body: 'Ut cupidatat dolore ea mollit reprehenderit commodo incididunt nostrud pariatur. Proident qui mollit ad pariatur et dolor veniam tempor est magna do ipsum. Esse est ad do consectetur do exercitation adipisicing excepteur laboris non voluptate commodo magna anim.',
-  createdAt: new Date().getTime()
-}];
-
-beforeEach((done) => {
-  Article.remove({}).then(() => {
-    return Article.insertMany(articles);
-  }).then(() => done());
-});
+beforeEach(populateUsers);
+beforeEach(populateArticles);
 
 describe('POST /articles', () => {
   it('should create a new article', (done) => {
@@ -206,3 +193,74 @@ describe('PATCH /articles/:id', () => {
   //     .end(done);
   // });
 });
+
+describe('GET /users/me', () => {
+  it('should return user if authenticated', (done) => {
+    request(app)
+      .get('/users/me')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body._id).toBe(users[0]._id.toHexString());
+        expect(res.body.email).toBe(users[0].email);
+      })
+      .end(done);
+  });
+
+  it('should return 401 if not authenticated', (done) => {
+    request(app)
+      .get('/users/me')
+      .expect(401)
+      .end(done);
+  });
+});
+
+describe('POST /users', () => {
+  it('should create a user', (done) =>{
+    var email = 'bkdev98@gmail.com';
+    var password = 'sunghokage';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toExist();
+        expect(res.body._id).toExist();
+        expect(res.body.email).toBe(email);
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findOne({email}).then((user) => {
+          expect(user).toExist();
+          expect(user.password).toNotBe(password);
+          done();
+        });
+      });
+  });
+
+  it('should return validation errors if request invalid', (done) => {
+    request(app)
+      .post('/users')
+      .send({
+        email: '&',
+        password: 'sung'
+      })
+      .expect(400)
+      .end(done);
+  });
+
+  it('should not create user if email in use', (done) => {
+    request(app)
+      .post('/users')
+      .send({
+        email: users[0].email,
+        password: 'sunghokage'
+      })
+      .expect(400)
+      .end(done);
+  });
+})
