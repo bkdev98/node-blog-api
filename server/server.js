@@ -63,6 +63,10 @@ app.delete('/articles/:id', (req, res) => {
   };
 
   Article.findByIdAndRemove(id).then((article) => {
+    if (!article) {
+      return res.status(404).send();
+    };
+    
     res.send({article});
   }).catch((e) => res.status(400).send());
 });

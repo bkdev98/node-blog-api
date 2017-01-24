@@ -125,4 +125,29 @@ describe('DELETE /articles/:id', () => {
         }).catch((e) => done(e));
       });
   });
+
+  it('should return 404 if article not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+
+    request(app)
+      .delete(`/articles/${hexId}`)
+      .expect(404)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Article.find().then((articles) => {
+          expect(articles.length).toBe(2);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should return 404 if object id is invalid', (done) => {
+    request(app)
+      .delete('/articles/123')
+      .expect(404)
+      .end(done);
+  })
 })
