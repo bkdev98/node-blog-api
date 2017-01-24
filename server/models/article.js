@@ -19,6 +19,10 @@ var Article = mongoose.model('Article', {
   _creator: {
     type: mongoose.Schema.Types.ObjectId,
     required: true
+  },
+  _category: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
   }
 });
 

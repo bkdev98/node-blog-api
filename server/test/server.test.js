@@ -17,11 +17,11 @@ describe('POST /articles', () => {
   it('should create a new article', (done) => {
     var title = 'Test article title';
     var body = 'Test article body';
-
+    var _category = categories[0]._id;
     request(app)
       .post('/articles')
       .set('x-auth', users[0].tokens[0].token)
-      .send({title, body})
+      .send({title, body, _category})
       .expect(200)
       .expect((res) => {
         expect(res.body.title).toBe(title);
@@ -36,6 +36,28 @@ describe('POST /articles', () => {
           expect(articles.length).toBe(3);
           expect(articles[2].title).toBe(title);
           expect(articles[2].body).toBe(body);
+          expect(articles[2]._category.toHexString()).toBe(`${_category}`);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should not create a new article with wrong category id', (done) => {
+    var title = 'Test article title';
+    var body = 'Test article body';
+    var _category = new ObjectID();
+    request(app)
+      .post('/articles')
+      .set('x-auth', users[0].tokens[0].token)
+      .send({title, body, _category})
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Article.find().then((articles) => {
+          expect(articles.length).toBe(2);
           done();
         }).catch((e) => done(e));
       });
@@ -64,10 +86,9 @@ describe('GET /articles', () => {
   it('should get all articles', (done) => {
     request(app)
       .get('/articles')
-      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
-        expect(res.body.articles.length).toBe(1);
+        expect(res.body.articles.length).toBe(2);
       })
       .end(done);
   });
@@ -77,19 +98,10 @@ describe('GET /articles/:id', () => {
   it('should return article doc', (done) => {
     request(app)
       .get(`/articles/${articles[0]._id.toHexString()}`)
-      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.article.title).toBe(articles[0].title);
       })
-      .end(done);
-  });
-
-  it('should not return article doc created by other user', (done) => {
-    request(app)
-      .get(`/articles/${articles[1]._id.toHexString()}`)
-      .set('x-auth', users[0].tokens[0].token)
-      .expect(404)
       .end(done);
   });
 

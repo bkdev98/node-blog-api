@@ -7,18 +7,22 @@ const {Category} = require('./../../models/category');
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
+const categoryOneId = new ObjectID();
+const categoryTwoId = new ObjectID();
 
 const articles = [{
   _id: new ObjectID(),
   title: 'Occaecat consectetur minim labore ullamco quis reprehenderit excepteur officia.',
   body: 'Sit aute velit exercitation magna voluptate incididunt aliqua aute nostrud id ad ut ex sint labore labore duis. Est labore fugiat magna labore veniam fugiat anim tempor ex eiusmod aliquip amet adipisicing esse enim dolor aute. Sunt dolor pariatur reprehenderit enim dolore aliqua id nostrud id velit sit consectetur.',
   createdAt: new Date().getTime(),
+  _category: categoryOneId,
   _creator: userOneId
 }, {
   _id: new ObjectID(),
   title: 'Enim eiusmod veniam amet dolore cupidatat id deserunt amet id in nostrud cupidatat cillum sunt deserunt.',
   body: 'Ut cupidatat dolore ea mollit reprehenderit commodo incididunt nostrud pariatur. Proident qui mollit ad pariatur et dolor veniam tempor est magna do ipsum. Esse est ad do consectetur do exercitation adipisicing excepteur laboris non voluptate commodo magna anim.',
   createdAt: new Date().getTime(),
+  _category: categoryTwoId,
   _creator: userTwoId
 }];
 
@@ -41,11 +45,11 @@ const users = [{
 }];
 
 const categories = [{
-  _id: new ObjectID(),
+  _id: categoryOneId,
   name: "Freelance",
   _creator: userOneId
 }, {
-  _id: new ObjectID(),
+  _id: categoryTwoId,
   name: "Web Development",
   _creator: userTwoId
 }];

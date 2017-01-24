@@ -22,10 +22,8 @@ app.get('/', (req, res) => {
   res.send('Node Blog API')
 });
 
-app.get('/articles', authenticate, (req, res) => {
-  Article.find({
-    _creator: req.user._id
-  }).then((articles) => {
+app.get('/articles', (req, res) => {
+  Article.find().then((articles) => {
     res.send({articles});
   }, (e) => {
     res.status(400).send(e);
@@ -33,30 +31,34 @@ app.get('/articles', authenticate, (req, res) => {
 });
 
 app.post('/articles', authenticate, (req, res) => {
-  var article = new Article({
-    title: req.body.title,
-    body: req.body.body,
-    _creator: req.user._id
-  });
+  Category.findById(req.body._category).then((category) => {
+    if (!category) {
+      return res.status(400).send();
+    }
 
-  article.save().then((doc) => {
-    res.send(doc);
-  }, (e) => {
-    res.status(400).send(e);
+    var article = new Article({
+      title: req.body.title,
+      body: req.body.body,
+      _category: category._id,
+      _creator: req.user._id
+    });
+
+    article.save().then((doc) => {
+      res.send(doc);
+    }, (e) => {
+      res.status(400).send(e);
+    });
   });
 });
 
-app.get('/articles/:id', authenticate, (req, res) => {
+app.get('/articles/:id', (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   };
 
-  Article.findOne({
-    _id: id,
-    _creator: req.user._id
-  }).then((article) => {
+  Article.findById(id).then((article) => {
     if (!article) {
       return res.status(404).send();
     };
@@ -153,10 +155,6 @@ app.delete('/users/me/token', authenticate, (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Started up on port ${port}.`);
-});
-
 app.post('/categories', authenticate, (req, res) => {
   var body = _.pick(req.body, ['name']);
   body._createdAt = new Date().getTime();
@@ -169,6 +167,10 @@ app.post('/categories', authenticate, (req, res) => {
   }).catch((e) => {
     return res.status(400).send();
   });
+});
+
+app.listen(port, () => {
+  console.log(`Started up on port ${port}.`);
 });
 
 module.exports = {app};
